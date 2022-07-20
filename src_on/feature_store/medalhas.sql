@@ -1,4 +1,6 @@
 -- Databricks notebook source
+-- DBTITLE 1,Assinaturas/Medalhas
+-- Construindo a Featured de Assinaturas/Medalhas
 select 
    t1.idPlayer,
   count(distinct  t1.idMedal) as qtMedalhaDist,
