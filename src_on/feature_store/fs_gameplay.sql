@@ -1,19 +1,3 @@
--- Databricks notebook source
--- já que inicialmente vamos criar a pratileira de "gameplay" dentro da gameplay vamos reunir variáveis que dizem respeito a gameplay, então vamos pegar de algumas tabelas os dados e construir variáveis que já definimos anteriormente (caracteristicas para explicar o churn).
-
--- COMMAND ----------
-
--- inicialmente precisamos de efetuar uma análise para saber qual intervalo de tempo iremos trabalhar, para isso vamos pegar a média de partidas que os players jogam por dia, após a análise foi decidido que o intervalo de 1 mês é satisfatório.
-
-select idPlayer,
-        count(*)
-
-from bronze_gc.tb_lobby_stats_player
-where month(dtCreatedAt) = 1
-group by 1
-
--- COMMAND ----------
-
 -- Agora começamos a criar as variáveis de gameplay.
 
 with tb_level as (
@@ -23,8 +7,8 @@ with tb_level as (
   row_number() over (partition by idPlayer order by dtCreatedAt desc) as rnPlayer
 
   from bronze_gc.tb_lobby_stats_player
-  where dtCreatedAt < '2022-01-01'
-  and dtCreatedAt >= date_add('2022-01-01', -30)
+  where dtCreatedAt < '[date]'
+  and dtCreatedAt >= date_add('[date]', -30)
 
   order by idPlayer, dtCreatedAt
 ),
@@ -75,7 +59,7 @@ tb_gameplay_stats as (
      count (case when dayofweek(dtCreatedAt) = 6 then date(dtCreatedAt) end) / count(distinct date(dtCreatedAt)) as propDia6,
      count (case when dayofweek(dtCreatedAt) = 7 then date(dtCreatedAt) end) / count(distinct date(dtCreatedAt)) as propDia7,
 
-    min(datediff( '2022-01-01', dtCreatedAt)) as qtRecencia,
+    min(datediff( '[date]', dtCreatedAt)) as qtRecencia,
 
     avg(flWinner) as winRate,
 
@@ -99,21 +83,16 @@ tb_gameplay_stats as (
 
 
   from bronze_gc.tb_lobby_stats_player
-  where dtCreatedAt < '2022-01-01'
-  and dtCreatedAt >= date_add('2022-01-01', -30)
+  where dtCreatedAt < '[date]'
+  and dtCreatedAt >= date_add('[date]', -30)
 
   group by idPlayer
 )
 
 select 
-  '2022-01-01' as dtRef,
+  '[date]' as dtRef,
   t1.*,
   t2.vlLevel
 from tb_gameplay_stats as t1
 left join tb_level_final as t2
 on t1.idPlayer = t2.idPlayer
-
-
--- COMMAND ----------
-
-
